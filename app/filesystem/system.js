@@ -1,5 +1,6 @@
 const { spawn } = require("child_process");
 const fs = require('fs');
+const util = require('util');
 
 const getDrives = () => {
   const list = spawn('cmd');
@@ -19,10 +20,31 @@ const getDrives = () => {
   });
 }
 
-const getContent = (dirPath) => {
-  
+const getDirectoryContent = (dirPath) => {
+  const readdir = util.promisify(fs.readdir);
+  const stat = util.promisify(fs.stat);
+  return new Promise((resolve, reject) => {
+    readdir(dirPath).
+    then(items => items).
+    then(items => {
+      let getItemsStats = [];
+      console.log(items);
+      for (item of items){
+        getItemsStats.push((stat(`${dirPath}/${item}`)));
+      }
+      return Promise.all(getItemsStats);
+    }).
+    then(itemStats => {
+      resolve(itemStats);
+    }).
+    catch(error => {
+      console.log(error);
+      reject(error);
+    });
+  });
 }
 
 module.exports = {
   getDrives,
+  getDirectoryContent
 }
